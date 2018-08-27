@@ -1,0 +1,3 @@
+[submodule "StuDjango"]
+	path = StuDjango
+	url = https://github.com/pytoday/StuDjango.git
