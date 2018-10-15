@@ -43,5 +43,5 @@ iptables -A INPUT  -p tcp -m multiport --dports 8000 -g LIMIT_ACCESS_DJ
 iptables -A LIMIT_ACCESS_DJ -s 0.0.0.0/0 -j ACCEPT
 
 #Log and denied
-iptables -A INPUT ! -d 255.255.255.255 -j LOG --log-prefix="iptables-reject"
+iptables -A INPUT ! -d 255.255.255.255 -j LOG --log-prefix="iptables-reject "
 iptables -A INPUT ! -d 255.255.255.255 -j DROP
