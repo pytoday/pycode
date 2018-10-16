@@ -33,11 +33,11 @@ def traffic(nic_name):
 def getnic():
     nic_list = []
     nic_names = ['bond0', 'eth0', 'eth1', 'eth2', 'eth3', 'eth4', 'eth5', 'eth6',
-                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6']
+                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6', 'wlan', 'lan']
     with open(nic_file, 'r') as f:
         nic_lines = f.readlines()
     for line in nic_lines:
-        if ':' in line and 'lo:' not in line and ('em' in line or 'eth' in line or 'bond' in line):
+        if ':' in line and 'lo:' not in line and ('em' in line or 'eth' in line or 'bond' in line or 'lan' in line):
             nic_name = line.split(':')[0].strip()
             if nic_name in nic_names:
                 nic_list.append(nic_name)
@@ -47,9 +47,9 @@ def getnic():
 def getnicid(nic_name):
     # better to use dict not list
     nic_names = ['bond0', 'eth0', 'eth1', 'eth2', 'eth3', 'eth4', 'eth5', 'eth6',
-                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6']
-    nic_inids = [1000, 1002, 1004, 1006, 1008, 1010, 1012, 1014, 1016, 1018, 1020, 1022, 1024, 1028]
-    nic_outids = [1001, 1003, 1005, 1007, 1009, 1011, 1013, 1015, 1017, 1019, 1021, 1023, 1025, 1027]
+                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6', 'wlan', 'lan']
+    nic_inids = [1000, 1002, 1004, 1006, 1008, 1010, 1012, 1014, 1016, 1018, 1020, 1022, 1024, 1026, 1028, 3542, 3544]
+    nic_outids = [1001, 1003, 1005, 1007, 1009, 1011, 1013, 1015, 1017, 1019, 1021, 1023, 1025, 1027, 1029, 3543, 3545]
     zipped = list(zip(nic_names, nic_inids, nic_outids))
     return zipped[nic_names.index(nic_name)]
 
@@ -93,9 +93,11 @@ if __name__ == '__main__':
     else:
         ll = str(out[0]).split('\n')
 
-    if os.path.exists(lock_file) and (len(ll) > 3):
-        sys.exit()
-    elif not os.path.exists(lock_file) and (len(ll) > 3):
+    if os.path.exists(lock_file) or (len(ll) > 3):
+        if os.path.exists(lock_file) and (len(ll) < 1):
+            os.remove(lock_file)
+        elif not os.path.exists(lock_file) and (len(ll) > 3):
+            sys.exit()
         sys.exit()
     else:
         fd = open(lock_file, 'w')

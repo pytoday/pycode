@@ -45,11 +45,11 @@ def getspeed(nic_name):
 def getnic():
     nic_list = []
     nic_names = ['bond0', 'eth0', 'eth1', 'eth2', 'eth3', 'eth4', 'eth5', 'eth6',
-                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6']
+                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6', 'wlan', 'lan']
     with open(nic_file, 'r') as f:
         nic_lines = f.readlines()
     for line in nic_lines:
-        if ':' in line and 'lo:' not in line and ('em' in line or 'eth' in line or 'bond' in line):
+        if ':' in line and 'lo:' not in line and ('em' in line or 'eth' in line or 'bond' in line or 'lan' in line):
             nic_name = line.split(':')[0].strip()
             if nic_name in nic_names:
                 nic_list.append(nic_name)
@@ -58,8 +58,8 @@ def getnic():
 
 def getnicid(nic_name):
     nic_names = ['bond0', 'eth0', 'eth1', 'eth2', 'eth3', 'eth4', 'eth5', 'eth6',
-                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6']
-    nic_inids = [3227, 3228, 3229, 3230, 3231, 3232, 3233, 3234, 3235, 3236, 3237, 3238, 3239, 3240, 3241]
+                 'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6', 'wlan', 'lan']
+    nic_inids = [3227, 3228, 3229, 3230, 3231, 3232, 3233, 3234, 3235, 3236, 3237, 3238, 3239, 3240, 3241, 3546, 3547]
     zipped = list(zip(nic_names, nic_inids))
     return zipped[nic_names.index(nic_name)]
 
@@ -103,9 +103,11 @@ if __name__ == '__main__':
     else:
         ll = str(out[0]).split('\n')
 
-    if os.path.exists(lock_file) and (len(ll) > 3):
-        sys.exit()
-    elif not os.path.exists(lock_file) and (len(ll) > 3):
+    if os.path.exists(lock_file) or (len(ll) > 3):
+        if os.path.exists(lock_file) and (len(ll) < 1):
+            os.remove(lock_file)
+        elif not os.path.exists(lock_file) and (len(ll) > 3):
+            sys.exit()
         sys.exit()
     else:
         fd = open(lock_file, 'w')
