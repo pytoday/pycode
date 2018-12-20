@@ -31,16 +31,6 @@ from openpyxl import Workbook
 ) ENGINE=InnoDB AUTO_INCREMENT=5411 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin                                 |
 """
 
-# db config
-connect = pymysql.connect(
-    host='192.168.31.134',
-    user='user',
-    password='password',
-    charset='utf8',
-    db='db1'
-)
-cursor = connect.cursor()
-
 
 # get mod
 def get_mod(cur):
@@ -77,26 +67,63 @@ def save_detail(ws, data):
 
 
 # get idc summary
-def get_sum(idc, mod, cur):
-    sql_idc_mod = "select count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where jifang='%s' and mod1 like '%s'"
-    sql_idc = "select count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where jifang='%s'"
-    mod_data = cur.execute(sql_idc_mod, (idc, mod))
+def get_sum(idc, mods, cur):
+    sql_idc_mod = "select '%s', count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where jifang='%s' and mod1 like '%s'"
+    sql_idc = "select '汇总', count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where jifang='%s'"
+    mod_data = []
+    for mod in mods:
+        mod_data += cur.execute(sql_idc_mod, (idc, mod))
     idc_data = cur.execute(sql_idc, (idc,))
     return mod_data, idc_data
 
 
 # get all summary
-def get_allsum():
-    pass
+def get_allsum(mods, cur):
+    sql_idc_mod = "select '%s', count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where mod1 like '%s'"
+    sql_idc = "select '汇总', count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource"
+    mod_data = []
+    for mod in mods:
+        mod_data += cur.execute(sql_idc_mod, (mod, mod))
+    idc_data = cur.execute(sql_idc)
+    return mod_data, idc_data
+
 
 # save summary to excel
-sum_title = ['业务', '服务器数量', '负载平均值', 'CPU使用率%', '内存使用率%', '磁盘IO平均率%', 'DATA磁盘使用率%']
+def save_allsum(ws, idcs, mods, cur):
+    # set summary title
+    sum_title = ['业务', '服务器数量', '负载平均值', 'CPU使用率%', '内存使用率%', '磁盘IO平均率%', 'DATA磁盘使用率%']
+    empty_line = ['']*7
+
+    # save all idc summary
+    ws['A1'] = "全部机房"
+    ws.merge_cells('A1:A7')
+    ws.append(sum_title)
+    allsum_data = get_allsum(mods, cur)
+    for row in allsum_data[0]:
+        ws.append(row)
+    ws.append(allsum_data[1])
+    ws.append(empty_line)
+
+    # save single idc summary
+    for idc in idcs:
+        ws.append(idc)
+        sum_data = get_sum(idc, mods, cur)
+        for row in sum_data[0]:
+            ws.append(row)
+        ws.append(sum_data[1])
+        ws.append(empty_line)
 
 
 if __name__ == '__main__':
-    print(list(get_mod(cursor)))
-    print(list(get_idc(cursor)))
-    print(get_detail(cursor)[0])
+    # db config
+    connect = pymysql.connect(
+        host='192.168.31.134',
+        user='user',
+        password='password',
+        charset='utf8',
+        db='db1'
+    )
+    cursor = connect.cursor()
 
     # create workbook
     wb = Workbook()
@@ -107,6 +134,7 @@ if __name__ == '__main__':
 
     # add data to work sheet
     save_detail(ws2, get_detail(cursor))
+    save_allsum(ws1, get_idc(cursor), get_mod(cursor), cursor)
 
     # save workbook
     wb.save(filename=dst_file)
