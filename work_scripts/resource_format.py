@@ -84,7 +84,10 @@ def get_sum(idc, mod, cur):
     idc_data = cur.execute(sql_idc, (idc,))
     return mod_data, idc_data
 
+
 # get all summary
+def get_allsum():
+    pass
 
 # save summary to excel
 sum_title = ['业务', '服务器数量', '负载平均值', 'CPU使用率%', '内存使用率%', '磁盘IO平均率%', 'DATA磁盘使用率%']
