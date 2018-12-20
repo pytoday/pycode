@@ -15,7 +15,7 @@ from openpyxl import Workbook
 
 
 """
-<table define>
+<TABLE DEFINE>
 | tb1 | CREATE TABLE `tb1` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '无意义',
   `ip` varchar(20) COLLATE utf8mb4_bin NOT NULL DEFAULT '0' COMMENT '机器IP',
@@ -62,27 +62,29 @@ def get_idc(cur):
 
 # get detail
 def get_detail(cur):
-    sql = "select * from tb1"
+    sql = "select ip,mod1,mod1,jifang,loads,cpu,mem,io,disk from tb1"
     cur.execute(sql)
     data = cur.fetchall()
     return data
 
 
-# create workbook
-wb = Workbook()
-dst_file = "20XX年X份自建机房服务器资源使用情况-V1.0.xlsx"
-ws1 = wb.active
-ws1.title = "汇总信息"
-ws2 = wb.create_sheet(title="汇总详情")
-# ws1.append(range(600))
-# ws2.cell(column=col, row=row, value="{0}".format(get_column_letter(col)))
-wb.save(filename=dst_file)
-
-
 # save detail to excel
-detail_title = ['IP', '一级模块', '二级模块', '机房', '1分钟负载', 'CPU使用率', '内存使用率', '磁盘io', '磁盘使用率']
-# get summary
+def save_detail(ws, data):
+    detail_title = ['IP', '一级模块', '二级模块', '机房', '1分钟负载', 'CPU使用率', '内存使用率', '磁盘io', '磁盘使用率']
+    ws.append(detail_title)
+    for row in data:
+        ws.append(row)
 
+
+# get idc summary
+def get_sum(idc, mod, cur):
+    sql_idc_mod = "select count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where jifang='%s' and mod1 like '%s'"
+    sql_idc = "select count(1), round(sum(loads)/count(1), 3), round(sum(cpu)/count(1), 3), round(sum(mem)/count(1),3),round(sum(io)/count(1), 3), round(sum(disk)/count(1), 3) from db1.resource where jifang='%s'"
+    mod_data = cur.execute(sql_idc_mod, (idc, mod))
+    idc_data = cur.execute(sql_idc, (idc,))
+    return mod_data, idc_data
+
+# get all summary
 
 # save summary to excel
 sum_title = ['业务', '服务器数量', '负载平均值', 'CPU使用率%', '内存使用率%', '磁盘IO平均率%', 'DATA磁盘使用率%']
@@ -92,3 +94,16 @@ if __name__ == '__main__':
     print(list(get_mod(cursor)))
     print(list(get_idc(cursor)))
     print(get_detail(cursor)[0])
+
+    # create workbook
+    wb = Workbook()
+    dst_file = "20XX年X份自建机房服务器资源使用情况-V1.0.xlsx"
+    ws1 = wb.active
+    ws1.title = "汇总信息"
+    ws2 = wb.create_sheet(title="汇总详情")
+
+    # add data to work sheet
+    save_detail(ws2, get_detail(cursor))
+
+    # save workbook
+    wb.save(filename=dst_file)
