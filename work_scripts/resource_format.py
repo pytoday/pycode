@@ -133,20 +133,37 @@ def save_allsum(ws, idcs, cur):
         ws.column_dimensions[chr(col)].width = 18.0
 
 
-# set detail style
-def style_range(ws, cell_range, border=Border()):
+# set sum style
+def style_range(ws, cell_range):
+    thin = Side(border_style="thin", color="000000")
+    bold = Side(border_style="medium", color="000000")
+    # double = Side(border_style="double", color="ff0000")
+    border = Border(top=bold, left=thin, right=thin, bottom=bold)
+
     font = Font(bold=True, size=13)
     font1 = Font(bold=True, size=12)
 
+    # set border
     top = Border(top=border.top)
     left = Border(left=border.left)
     right = Border(right=border.right)
     bottom = Border(bottom=border.bottom)
 
+    rows = ws[cell_range]
+    # for cell in rows[0]:
+    # cell.border = cell.border + top
+    for cell in rows[-1]:
+        cell.border = cell.border + bottom
+    for row in rows:
+        l = row[0]
+        r = row[-1]
+        l.border = l.border + left
+        r.border = r.border + right
+
     # set idc name style
     idc_name_cell = cell_range.split(":")[0]
     ws[idc_name_cell].font = font
-    ws[idc_name_cell].alignment = Alignment()
+    ws[idc_name_cell].alignment = Alignment(horizontal="center", vertical="center")
 
     row_prefix = cell_range.split(":")[0][1:]
     f_col = 'A' + str(row_prefix)
@@ -157,19 +174,6 @@ def style_range(ws, cell_range, border=Border()):
     for col in range(ord("A"), ord("G")+1):
         cell = chr(col)+str(title_row_prefix)
         ws[cell].font = font1
-
-    # set border
-    rows = ws[cell_range]
-    for cell in rows[0]:
-        cell.border = cell.border + top
-    for cell in rows[-1]:
-        cell.border = cell.border + bottom
-
-    for row in rows:
-        l = row[0]
-        r = row[-1]
-        l.border = l.border + left
-        r.border = r.border + right
 
 
 if __name__ == '__main__':
