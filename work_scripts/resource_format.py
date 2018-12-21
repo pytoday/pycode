@@ -12,7 +12,7 @@
 # Import the module needed to run the script
 import pymysql
 from openpyxl import Workbook
-
+from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
 
 """
 <TABLE DEFINE>
@@ -61,9 +61,17 @@ def get_detail(cur):
 # save detail to excel
 def save_detail(ws, data):
     detail_title = ['IP', '一级模块', '二级模块', '机房', '1分钟负载', 'CPU使用率', '内存使用率', '磁盘io', '磁盘使用率']
+
     ws.append(detail_title)
     for row in data:
         ws.append(row)
+
+    for col in range(ord("A"), ord("I")+1):
+        ws.column_dimensions[chr(col)].width = 12.0
+    font = Font(bold=True, size=12)
+    for col in range(ord("A"), ord("I")+1):
+        cell = chr(col)+'1'
+        ws[cell].font = font
 
 
 # get idc summary
@@ -101,7 +109,6 @@ def save_allsum(ws, idcs, cur):
     # save all idc summary
     mods = get_mod(cursor)
     ws['A1'] = "全部机房"
-    # ws.merge_cells('A1:G1')
     ws.append(sum_title)
     allsum_data = get_allsum(mods, cur)
     for row in allsum_data[0]:
@@ -120,6 +127,49 @@ def save_allsum(ws, idcs, cur):
             ws.append(row)
         ws.append(sum_data[1][0])
         ws.append(empty_line)
+
+    # set style
+    for col in range(ord("A"), ord("I")+1):
+        ws.column_dimensions[chr(col)].width = 18.0
+
+
+# set detail style
+def style_range(ws, cell_range, border=Border()):
+    font = Font(bold=True, size=13)
+    font1 = Font(bold=True, size=12)
+
+    top = Border(top=border.top)
+    left = Border(left=border.left)
+    right = Border(right=border.right)
+    bottom = Border(bottom=border.bottom)
+
+    # set idc name style
+    idc_name_cell = cell_range.split(":")[0]
+    ws[idc_name_cell].font = font
+    ws[idc_name_cell].alignment = Alignment()
+
+    row_prefix = cell_range.split(":")[0][1:]
+    f_col = 'A' + str(row_prefix)
+    l_col = 'G' + str(row_prefix)
+    ws.merge_cells(f_col+':'+l_col)
+
+    title_row_prefix = int(row_prefix)+1
+    for col in range(ord("A"), ord("G")+1):
+        cell = chr(col)+str(title_row_prefix)
+        ws[cell].font = font1
+
+    # set border
+    rows = ws[cell_range]
+    for cell in rows[0]:
+        cell.border = cell.border + top
+    for cell in rows[-1]:
+        cell.border = cell.border + bottom
+
+    for row in rows:
+        l = row[0]
+        r = row[-1]
+        l.border = l.border + left
+        r.border = r.border + right
 
 
 if __name__ == '__main__':
@@ -143,6 +193,19 @@ if __name__ == '__main__':
     # add data to work sheet
     save_detail(ws2, get_detail(cursor))
     save_allsum(ws1, get_idc(cursor), cursor)
+
+    # style format
+    num_mod = len(list(get_mod(cursor)))
+    num_idc = len(list(get_idc(cursor)))
+
+    first = 1
+    last = num_mod+3
+    increment = num_mod+4
+    for idc in range(num_idc+1):
+        cell_r = 'A'+str(first)+':'+'G'+str(last)
+        style_range(ws1, cell_r)
+        first += increment
+        last += increment
 
     # save workbook
     wb.save(filename=dst_file)
