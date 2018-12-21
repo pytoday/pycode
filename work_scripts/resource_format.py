@@ -12,7 +12,7 @@
 # Import the module needed to run the script
 import pymysql
 from openpyxl import Workbook
-from openpyxl.styles import Border, Side, PatternFill, Font, GradientFill, Alignment
+from openpyxl.styles import Border, Side, Font, Alignment
 
 """
 <TABLE DEFINE>
