@@ -100,8 +100,9 @@ if __name__ == '__main__':
             sys.exit()
         sys.exit()
     else:
+        pid = os.getpid()
         fd = open(lock_file, 'w')
-        fd.write('locking....')
+        fd.write(str(pid))
         fd.close()
 
         try:
