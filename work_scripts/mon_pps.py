@@ -93,10 +93,10 @@ if __name__ == '__main__':
     else:
         ll = str(out[0]).split('\n')
 
-    if os.path.exists(lock_file) or (len(ll) > 3):
-        if os.path.exists(lock_file) and (len(ll) < 1):
+    if os.path.exists(lock_file) or (len(ll) > 4):
+        if os.path.exists(lock_file) and (len(ll) < 3):
             os.remove(lock_file)
-        elif not os.path.exists(lock_file) and (len(ll) > 3):
+        elif not os.path.exists(lock_file) and (len(ll) > 4):
             sys.exit()
         sys.exit()
     else:
