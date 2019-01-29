@@ -3,8 +3,8 @@
 # coding=utf-8
 # Import the module needed to run the script
 
-import sys, os
-import subprocess
+import sys, os, time
+import subprocess, signal
 from subprocess import Popen, PIPE
 from time import sleep
 from multiprocessing import Pool
@@ -83,6 +83,7 @@ if __name__ == '__main__':
     # exec_file used to send monitor value
     exec_file = '/data/services/op_agent_d/tools/send_value '
     agents = 6
+    interval = 300
 
     child1 = subprocess.Popen(['ps', '-ef'], stdout=subprocess.PIPE, shell=False)
     child2 = subprocess.Popen(['grep', '-w', __file__], stdin=child1.stdout, stdout=subprocess.PIPE, shell=False)
@@ -92,6 +93,17 @@ if __name__ == '__main__':
         ll = out[0].decode().split('\n')
     else:
         ll = str(out[0]).split('\n')
+
+    # process hang check
+    if os.path.exists(lock_file):
+        file_time = os.path.getmtime(lock_file)
+        now_time = time.time()
+        time_diff = now_time - file_time
+        if time_diff > interval:
+            with open(lock_file) as f:
+                pid = int(f.read())
+            os.kill(pid, signal.SIGKILL)
+            os.remove(lock_file)
 
     if os.path.exists(lock_file) or (len(ll) >= 4):
         if os.path.exists(lock_file) and (len(ll) <= 3):
