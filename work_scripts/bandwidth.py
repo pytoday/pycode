@@ -83,7 +83,7 @@ def pcheck(pids):
             with open('/proc/'+pid+'/cmdline') as cmd:
                 cmd_content = cmd.read()
             if __file__ in cmd_content:
-                #print(pid, cmd_content)
+                # print(pid, cmd_content)
                 os.kill(int(pid), signal.SIGKILL)
 
 
