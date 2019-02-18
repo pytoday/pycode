@@ -83,8 +83,8 @@ def pcheck(pids):
             with open('/proc/'+pid+'/cmdline') as cmd:
                 cmd_content = cmd.read()
             if __file__ in cmd_content:
-                #os.kill(int(pid), signal.SIGKILL)
-                print(pid)
+                #print(pid, cmd_content)
+                os.kill(int(pid), signal.SIGKILL)
 
 
 if __name__ == '__main__':
@@ -122,9 +122,9 @@ if __name__ == '__main__':
             pids = allpid.decode().split()
         else:
             pids = allpid.split()
+        pids.remove(str(os.getpid()))
         pcheck(pids)
 
-    else:
         pid = os.getpid()
         fd = open(lock_file, 'w')
         fd.write(str(pid))
