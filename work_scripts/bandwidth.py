@@ -76,6 +76,17 @@ def makeurl(band_width=(0, 0, 0, 0)):
     return nic_para
 
 
+def pcheck(pids):
+    # using /proc/pid/cmdline,not ps cmd
+    for pid in pids:
+        if pid:
+            with open('/proc/'+pid+'/cmdline') as cmd:
+                cmd_content = cmd.read()
+            if __file__ in cmd_content:
+                #os.kill(int(pid), signal.SIGKILL)
+                print(pid)
+
+
 if __name__ == '__main__':
 
     nic_file = '/proc/net/dev'
@@ -85,32 +96,34 @@ if __name__ == '__main__':
     agents = 6
     interval = 300
 
-    child1 = subprocess.Popen(['ps', '-ef'], stdout=subprocess.PIPE, shell=False)
-    child2 = subprocess.Popen(['grep', '-w', __file__], stdin=child1.stdout, stdout=subprocess.PIPE, shell=False)
-    out = child2.communicate()
-
-    if isinstance(out[0], bytes):
-        ll = out[0].decode().split('\n')
-    else:
-        ll = str(out[0]).split('\n')
-
     # process hang check
     if os.path.exists(lock_file):
         file_time = os.path.getmtime(lock_file)
         now_time = time.time()
         time_diff = now_time - file_time
-        if time_diff > interval:
-            with open(lock_file) as f:
-                pid = int(f.read())
+        with open(lock_file) as f:
+            pid = int(f.read())
+
+        if not os.path.exists('/proc/'+str(pid)):
+            os.remove(lock_file)
+            sys.exit()
+        elif time_diff > interval:
             os.kill(pid, signal.SIGKILL)
             os.remove(lock_file)
-
-    if os.path.exists(lock_file) or (len(ll) >= 4):
-        if os.path.exists(lock_file) and (len(ll) <= 3):
-            os.remove(lock_file)
-        elif not os.path.exists(lock_file) and (len(ll) >= 4):
             sys.exit()
-        sys.exit()
+        else:
+            sys.exit()
+
+    elif not os.path.exists(lock_file):
+        # get pid of script and kill it
+        proc = subprocess.Popen(['pidof', 'python'], stdout=subprocess.PIPE, shell=False)
+        allpid = proc.stdout.read()
+        if isinstance(allpid, bytes):
+            pids = allpid.decode().split()
+        else:
+            pids = allpid.split()
+        pcheck(pids)
+
     else:
         pid = os.getpid()
         fd = open(lock_file, 'w')
