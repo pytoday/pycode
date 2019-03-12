@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     # create workbook
     wb = Workbook()
-    dst_file = "20XX年X份自建机房服务器资源使用情况-V1.0.xlsx"
+    dst_file = "20XX年X月份自建机房服务器资源使用情况-V1.0.xlsx"
     ws1 = wb.active
     ws1.title = "汇总信息"
     ws2 = wb.create_sheet(title="汇总详情")
