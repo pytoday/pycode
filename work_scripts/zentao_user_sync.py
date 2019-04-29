@@ -44,19 +44,24 @@ class SyncUser:
                 all_user = []
                 for each in result:
                     all_user.append(each[0])
+            return set(all_user)
         except Exception as e:
             print(e)
-        return set(all_user)
+            return 0
 
     def getldapuser(self):
-        server = Server(host=LDAP_HOST, port=LDAP_PORT, get_info=ALL)
-        conn = Connection(server, LDAP_DN, LDAP_PASS, auto_bind=True)
-        conn.search(search_base=LDAP_BASE, search_filter='(&(objectclass=*)(cn=*))', attributes=['cn', 'email'])
-        all_entries = conn.entries
-        all_user = []
-        for entry in all_entries:
-            all_user.append(str(entry['cn']))
-        return set(all_user)
+        try:
+            server = Server(host=LDAP_HOST, port=LDAP_PORT, get_info=ALL)
+            conn = Connection(server, LDAP_DN, LDAP_PASS, auto_bind=True)
+            conn.search(search_base=LDAP_BASE, search_filter='(&(objectclass=*)(cn=*))', attributes=['cn', 'email'])
+            all_entries = conn.entries
+            all_user = []
+            for entry in all_entries:
+                all_user.append(str(entry['cn']))
+            return set(all_user)
+        except Exception as e:
+            print(e)
+            return 0
 
     def createuser(self, username):
         try:
