@@ -38,7 +38,15 @@ def getspeed(nic_name):
         with open('/sys/class/net/'+nic_name+'/speed', 'r') as f:
             speed = int(f.read())
     except IOError:
-        speed = 1
+        base_speed = 1000
+        bond_path = '/sys/class/net/'+nic_name+'/bonding/slaves'
+        # handle no speed net interface
+        if os.path.exists(bond_path):
+            with open(bond_path, 'r') as f:
+                slave_count = len(f.read().split())
+            speed = base_speed*slave_count
+        else:
+            speed = base_speed
     return speed
 
 
