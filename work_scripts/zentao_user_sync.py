@@ -8,7 +8,7 @@
 
 # Import the module needed to run the script
 import pymysql
-import time
+import time, hashlib, base64
 from ldap3 import Server, Connection, ALL
 
 # database config
@@ -63,6 +63,29 @@ class SyncUser:
             print(e)
             return 0
 
+    def getrole(self, username):
+        clientid = "app"
+        password = "password"
+        timestamp = str(int(time.time()))
+        m = hashlib.md5()
+        m.update((clientid + timestamp + password).encode('utf-8'))
+        md5text = m.hexdigest()
+        token = base64.b64encode((clientid + ";" + timestamp + ";" + md5text).encode('utf-8'))
+        url = "http://test-oa.example.com/api/v1/employee/getBaseInfo?token="+token+"&userId="+username
+        # role map
+        role_map = {2: ['dev', '研发', '研发人员'],
+                    3: ['qa', '测试', '测试人员'],
+                    4: ['pm', '项目经理', '项目经理'],
+                    5: ['po', '产品经理', '产品经理'],
+                    11: ['guest', 'guest', 'For guest'],
+                    }
+
+        realname = '张三'
+        groupid = 2
+        role = 'dev'
+
+        return role, realname, groupid
+
     def createuser(self, username):
         try:
             with self.connection.cursor() as cursor:
@@ -71,10 +94,12 @@ class SyncUser:
                            `commiter`, `avatar`, `email`, `skype`, `qq`, `yahoo`, `gtalk`, `wangwang`, `mobile`, \
                            `phone`, `address`, `zipcode`,`ip`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,\
                            %s, %s, %s, %s, %s, %s, %s)"
-                group_sql = "INSERT INTO `zt_usergroup` (`account`, `group`) VALUES (%s, %s)"
-                cursor.execute(user_sql, (0, username, 'somepassword', 'guest', username, '', '', '',
+                group_sql = "INSERT INTO `zt_userGroup` (`account`, `group`) VALUES (%s, %s)"
+
+                role_info = self.getrole(username)
+                cursor.execute(user_sql, (0, username, 'somepassword', role_info[0], role_info[1], '', '', '',
                                           username+'@example.com', '', '', '', '', '', '', '', '', '', '1.2.3.4'))
-                cursor.execute(group_sql, (username, 11))
+                cursor.execute(group_sql, (username, role_info[2]))
 
             # connection is not autocommit by default. So you must commit to save
             # your changes.
