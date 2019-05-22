@@ -7,8 +7,9 @@
 # ==================================================
 
 # Import the module needed to run the script
+import requests, json
+import time
 import pymysql
-import time, hashlib, base64
 from ldap3 import Server, Connection, ALL
 
 # database config
@@ -24,6 +25,10 @@ LDAP_PORT = 389
 LDAP_BASE = "dc=example,dc=com"
 LDAP_DN = "cn=admin,"+LDAP_BASE
 LDAP_PASS = "password"
+
+# http basic auth
+AUTH_USER = ""
+AUTH_PASSWD = ""
 
 
 class SyncUser:
@@ -64,23 +69,23 @@ class SyncUser:
             return 0
 
     def getrole(self, username):
-        clientid = "app"
-        password = "password"
-        timestamp = str(int(time.time()))
-        m = hashlib.md5()
-        m.update((clientid + timestamp + password).encode('utf-8'))
-        md5text = m.hexdigest()
-        token = base64.b64encode((clientid + ";" + timestamp + ";" + md5text).encode('utf-8'))
-        url = "http://test-oa.example.com/api/v1/employee/getBaseInfo?token="+token+"&userId="+username
+        auth = (AUTH_USER, AUTH_PASSWD)
+        r = requests.get(url="https://privileges.example.com/api/getUserList?disabled=0&user_name=" + username, auth=auth)
+        userdata = json.loads(r.text)
+        base_data = userdata["data"][0]
+        real_name = base_data["chinese_name"]
+        department = base_data["department"]
+        print(username, real_name, department)
         # role map
         role_map = {2: ['dev', '研发', '研发人员'],
                     3: ['qa', '测试', '测试人员'],
                     4: ['pm', '项目经理', '项目经理'],
                     5: ['po', '产品经理', '产品经理'],
                     11: ['guest', 'guest', 'For guest'],
+                    13: ['op', '产品运营', '产品运营']
                     }
 
-        realname = '张三'
+        realname = base_data["chinese_name"]
         groupid = 2
         role = 'dev'
 
