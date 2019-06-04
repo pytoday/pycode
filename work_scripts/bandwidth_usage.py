@@ -44,6 +44,9 @@ def getspeed(nic_name):
         if os.path.exists(bond_path):
             with open(bond_path, 'r') as f:
                 slave_count = len(f.read().split())
+            # 处理部分无用的异常绑定口实际没绑定物理口导致slave网卡数为0产生除零错误
+            if slave_count == 0:
+                slave_count = 1
             speed = base_speed*slave_count
         else:
             speed = base_speed
