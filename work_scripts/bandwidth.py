@@ -45,7 +45,7 @@ def getnic():
 
 
 def getnicid(nic_name):
-    # better to use dict not list
+    # better to use namedtuple not list
     nic_names = ['bond0', 'eth0', 'eth1', 'eth2', 'eth3', 'eth4', 'eth5', 'eth6',
                  'em0', 'em1', 'em2', 'em3', 'em4', 'em5', 'em6', 'wlan', 'lan']
     nic_inids = [1000, 1002, 1004, 1006, 1008, 1010, 1012, 1014, 1016, 1018, 1020, 1022, 1024, 1026, 1028, 3542, 3544]
