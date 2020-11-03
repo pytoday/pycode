@@ -8,7 +8,7 @@ class Topic(models.Model):
     """Study title"""
     text = models.CharField(max_length=200)
     date_added = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User)
+    owner = models.ForeignKey(User,on_delete=None)
 
     def __str__(self):
         return self.text
