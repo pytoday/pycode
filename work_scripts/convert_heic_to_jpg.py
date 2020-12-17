@@ -33,7 +33,7 @@ def loop_file(dir_src, dst):
 # add args for command line
 parser = argparse.ArgumentParser(description='Convert heic to jpeg.')
 parser.add_argument('-i', '--input', help='Input file name, heic format.')
-parser.add_argument('-s', '--src', default=os.getcwd(), help='Source directory name with heic image file.')
+parser.add_argument('-s', '--src', default=os.getcwd(), help='Source directory name with heic image file. default=cwd')
 parser.add_argument('-d', '--dst', default=os.path.join(os.getcwd(),"export"),help='Destination directory to save jpeg file.')
 args = parser.parse_args()
 
