@@ -6,20 +6,23 @@ import os,argparse
 def convert_img(img, dst):
     if img.lower().endswith('.heic'):
         basename = os.path.basename(img)
-        heif_file = pyheif.read(img)
-        image = Image.frombytes(
-            heif_file.mode, 
-            heif_file.size, 
-            heif_file.data,
-            "raw",
-            heif_file.mode,
-            heif_file.stride,
-            )
-        save_name = os.path.join(dst,basename) + ".jpeg"
-        if not os.path.exists(dst):
-            os.mkdir(dst)
-        image.save(save_name, "JPEG")
-        print("Input file is %s, output destination is %s" % (img, save_name))
+        try:
+            heif_file = pyheif.read(img)
+            image = Image.frombytes(
+                heif_file.mode, 
+                heif_file.size, 
+                heif_file.data,
+                "raw",
+                heif_file.mode,
+                heif_file.stride,
+                )
+            save_name = os.path.join(dst,basename) + ".jpeg"
+            if not os.path.exists(dst):
+                os.mkdir(dst)
+            image.save(save_name, "JPEG")
+            print("Input file is %s, output destination is %s" % (img, save_name))
+        except ValueError:
+            print("%s Not a heic file." % img)
     else:
         print("%s Not a heic file." % img)
 
