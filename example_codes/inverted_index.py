@@ -1,4 +1,5 @@
 import re
+from functools import reduce
 class SearchEngineBase(object):
     def __init__(self):
         pass
@@ -29,6 +30,7 @@ class BOWInvertedIndexEngine(SearchEngineBase):
     
     def search(self, query):
         query_words = list(self.parse_text_to_words(query))
+        '''
         query_words_index = []
         for query_word in query_words:
             query_words_index.append(0)
@@ -58,6 +60,12 @@ class BOWInvertedIndexEngine(SearchEngineBase):
             min_val = min(current_ids) 
             min_val_pos = current_ids.index(min_val) 
             query_words_index[min_val_pos] += 1
+        '''
+        #inverted index 为单个词到对应文件的字典映射，判断多个词同时在某个文件，只需要求以查询词为key的列表的交集
+        if set(query_words) < set(self.inverted_index.keys()):
+            result=set(reduce(lambda x, y: x & y, [set(self.inverted_index[qv]) for qv in query_words]))
+            return result
+        return []
         
     
     @staticmethod
@@ -73,7 +81,7 @@ class BOWInvertedIndexEngine(SearchEngineBase):
         return set(word_list)
         
 def main(search_engine):
-    for fpath in ['1.txt', '2.txt', '3.txt', '4.txt']:
+    for fpath in ['1.txt', '2.txt', '3.txt', '4.txt', '5.txt']:
         search_engine.add_corpus(fpath)
         
     while True:
