@@ -62,7 +62,7 @@ class BOWInvertedIndexEngine(SearchEngineBase):
             query_words_index[min_val_pos] += 1
         '''
         #inverted index 为单个词到对应文件的字典映射，判断多个词同时在某个文件，只需要求以查询词为key的列表的交集
-        if set(query_words) < set(self.inverted_index.keys()):
+        if set(query_words) < set(self.inverted_index.keys()):  #确认查询的词都有索引，既查询的词都包括在索引的key里面
             result=set(reduce(lambda x, y: x & y, [set(self.inverted_index[qv]) for qv in query_words]))
             return result
         return []
@@ -86,6 +86,8 @@ def main(search_engine):
         
     while True:
         query = input()
+        if not query.strip():
+            continue
         results = search_engine.search(query)
         print("Found {} result(s)".format(len(results)))
         for result in results:
